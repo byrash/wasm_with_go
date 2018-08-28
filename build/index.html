@@ -30,10 +30,30 @@ license that can be found in the LICENSE file.
 		});
 	</script>
 
-	<button onClick="add(1,2);" id="addButton">Add</button>
-	<button onClick="sub(5,2);" id="subButton">Sub</button>
-	<button onClick="mul(2,2);" id="mulButton">Mul</button>
-	<button onClick="div(4,2);" id="divButton">Div</button>
+	<div>
+		<div>
+			<label for="lhs"> LHS </label>
+			<input type="text" id="lhs">
+		</div>
+		<div>
+			<label for="rhs"> RHS </label>
+			<input type="text" id="rhs">
+		</div>
+		<div>
+			<button onClick="add('lhs','rhs','result');" id="addButton">Add</button>
+			<button onClick="sub('lhs','rhs','result');" id="subButton">Sub</button>
+			<button onClick="mul('lhs','rhs','result');" id="mulButton">Mul</button>
+			<button onClick="div('lhs','rhs','result');" id="divButton">Div</button>
+		</div>
+		<div>
+			<label for="rhs"> Result </label>
+			<input type="text" id="result" readonly>
+		</div>
+		<div>
+			<p id="errors" style="color: red"></p>
+		</div>
+	</div>
+
 </body>
 
 </html>

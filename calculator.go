@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"syscall/js"
 
 	"github.com/pkg/errors"
@@ -30,35 +31,83 @@ func mapJsMethodsToGoFuncs() {
 }
 
 func add(values []js.Value) {
-	lhs, rhs, _ := getLhsAndRhs(values)
-	sum, _ := operation(lhs, rhs, "+")
-	js.Global().Set("output", js.ValueOf(sum))
+	clearErrors()
+	defer handleFailures()
+	lhs, rhs, outputID, _ := getLHSAndRHS(values)
+	sum, err := operation(lhs, rhs, "+")
+	handleError(err)
+	setValueOfJsField(outputID, sum)
 }
 
 func sub(values []js.Value) {
-	lhs, rhs, _ := getLhsAndRhs(values)
-	sub, _ := operation(lhs, rhs, "-")
-	js.Global().Set("output", js.ValueOf(sub))
+	clearErrors()
+	defer handleFailures()
+	lhs, rhs, outputID, _ := getLHSAndRHS(values)
+	sub, err := operation(lhs, rhs, "-")
+	handleError(err)
+	setValueOfJsField(outputID, sub)
 }
 
 func mul(values []js.Value) {
-	lhs, rhs, _ := getLhsAndRhs(values)
-	mul, _ := operation(lhs, rhs, "*")
-	js.Global().Set("output", js.ValueOf(mul))
+	clearErrors()
+	defer handleFailures()
+	lhs, rhs, outputID, _ := getLHSAndRHS(values)
+	mul, err := operation(lhs, rhs, "*")
+	handleError(err)
+	setValueOfJsField(outputID, mul)
 }
 
 func div(values []js.Value) {
-	lhs, rhs, _ := getLhsAndRhs(values)
-	div, _ := operation(lhs, rhs, "/")
-	js.Global().Set("output", js.ValueOf(div))
+	clearErrors()
+	defer handleFailures()
+	lhs, rhs, outputID, _ := getLHSAndRHS(values)
+	div, err := operation(lhs, rhs, "/")
+	handleError(err)
+	setValueOfJsField(outputID, div)
 }
 
-func getLhsAndRhs(values []js.Value) (float64, float64, error) {
-	if len(values) != 2 {
-		return 0, 0, errors.New("Not required no of values received")
+func handleError(err error) {
+	if err != nil {
+		panic(err)
 	}
-	lhs, rhs := values[0].Float(), values[1].Float()
-	return lhs, rhs, nil
+}
+
+func getLHSAndRHS(values []js.Value) (float64, float64, string, error) {
+	if len(values) != 3 {
+		return 0, 0, "", errors.New("Not required no of values received")
+	}
+	lhsID := values[0].String()
+	rhsID := values[1].String()
+	outputID := values[2].String()
+	lhs, rhs := getValueOfJsField(lhsID), getValueOfJsField(rhsID)
+	return lhs, rhs, outputID, nil
+}
+
+func setErrorValue(msg string) {
+	js.Global().Get("document").Call("getElementById", "errors").Set("innerHTML", msg)
+}
+
+func clearErrors() {
+	setErrorValue("")
+}
+
+func handleFailures() {
+	if err := recover(); err != nil {
+		setErrorValue(fmt.Sprintf("%v", err))
+	}
+}
+
+func getValueOfJsField(fieldID string) float64 {
+	valStr := js.Global().Get("document").Call("getElementById", fieldID).Get("value").String()
+	valFloat, err := strconv.ParseFloat(valStr, 64)
+	if err != nil {
+		panic(errors.New("Only float value accepted"))
+	}
+	return valFloat
+}
+
+func setValueOfJsField(fieldID string, value float64) {
+	js.Global().Get("document").Call("getElementById", fieldID).Set("value", value)
 }
 
 func operation(lhs, rhs float64, op string) (float64, error) {
