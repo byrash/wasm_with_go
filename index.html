@@ -26,18 +26,14 @@ license that can be found in the LICENSE file.
 		WebAssembly.instantiateStreaming(fetch("calculator.wasm"), go.importObject).then((result) => {
 			mod = result.module;
 			inst = result.instance;
-			document.getElementById("runButton").disabled = false;
+			go.run(inst);
 		});
-
-		async function run() {
-			console.clear();
-			await go.run(inst);
-			inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
-		}
 	</script>
 
-	<!-- <button onClick="run();" id="runButton" disabled>Run</button> -->
-	<button onClick="run();" id="runButton">Run</button>
+	<button onClick="add(1,2);" id="addButton">Add</button>
+	<button onClick="sub(5,2);" id="subButton">Sub</button>
+	<button onClick="mul(2,2);" id="mulButton">Mul</button>
+	<button onClick="div(4,2);" id="divButton">Div</button>
 </body>
 
 </html>
